@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111214" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>To-do</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>To-do</h1>
+    <span id="sync-status" class="muted" title="동기화 상태"></span>
+    <button id="settings-btn" class="icon-btn" aria-label="설정">⚙</button>
+  </header>
+
+  <main>
+    <form id="new-item" autocomplete="off">
+      <input id="new-item-title" placeholder="할 일 추가" enterkeyhint="done">
+    </form>
+    <ul id="items" class="items"></ul>
+    <p id="empty" class="muted center" hidden>할 일이 없습니다.</p>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>PC·폰 동기화</h2>
+      <p class="muted small">
+        GitHub Gist에 데이터를 저장해 여러 기기에서 같이 씁니다.<br>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=To-do%20sync" target="_blank" rel="noopener">gist 권한 토큰 만들기</a> →
+        각 기기에 같은 토큰을 넣으세요. Gist ID는 비워두면 자동으로 찾거나 만듭니다.
+      </p>
+      <label>GitHub 토큰<input id="token" type="password" autocomplete="off" spellcheck="false"></label>
+      <label>Gist ID (선택)<input id="gist-id" autocomplete="off" spellcheck="false"></label>
+      <div class="row">
+        <button value="cancel" formnovalidate>취소</button>
+        <button value="save" class="primary">저장</button>
+      </div>
+      <hr>
+      <div class="row">
+        <button type="button" id="export-btn">내보내기</button>
+        <button type="button" id="import-btn">가져오기</button>
+        <input type="file" id="import-file" accept="application/json" hidden>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="vendor/Sortable.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
