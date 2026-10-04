@@ -113,3 +113,4 @@ dialog hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
 dialog hr + .row { margin-top: 0; justify-content: flex-start; }
 .row button { padding: 8px 14px; border-radius: 8px; background: var(--card); }
 .row .primary { background: var(--accent); color: #fff; }
+#sync-status.error { color: var(--danger); cursor: help; }

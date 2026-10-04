@@ -222,7 +222,25 @@ const statusEl = $('#sync-status');
 let pushTimer = null;
 let syncing = false;
 
-function setStatus(text) { statusEl.textContent = text; }
+function setStatus(text, detail = '') {
+  statusEl.textContent = text;
+  statusEl.title = detail || '동기화 상태';
+  statusEl.classList.toggle('error', !!detail);
+}
+
+statusEl.addEventListener('click', () => { if (statusEl.classList.contains('error')) alert(statusEl.title); });
+
+// Turn a failed request into something the user can act on.
+function showSyncError(err) {
+  console.warn(err);
+  const status = err.status;
+  if (!navigator.onLine) setStatus('오프라인', '인터넷 연결이 없습니다.');
+  else if (status === 401) setStatus('토큰 오류', '토큰이 틀렸거나 만료/삭제되었습니다. ⚙에서 토큰을 다시 넣어주세요.');
+  else if (status === 404) setStatus('Gist 없음', 'Gist ID가 틀렸거나, 토큰에 gist 권한이 없습니다. ⚙에서 Gist ID 칸을 비우고 저장해 보세요.');
+  else if (status === 403 || status === 429) setStatus('요청 거부', `GitHub가 요청을 거부했습니다 (${status}). 토큰의 gist 권한을 확인하거나 잠시 후 다시 시도하세요.`);
+  else if (status) setStatus(`오류 ${status}`, `GitHub 응답 오류 ${status}`);
+  else setStatus('GitHub 접속 불가', '이 네트워크에서 api.github.com 에 접속할 수 없습니다. 회사 방화벽/보안 프로그램이 막고 있을 수 있습니다.');
+}
 
 async function gh(path, opts = {}) {
   const res = await fetch(`https://api.github.com${path}`, {
@@ -234,7 +252,7 @@ async function gh(path, opts = {}) {
       ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
     },
   });
-  if (!res.ok) throw new Error(`GitHub ${res.status}`);
+  if (!res.ok) throw Object.assign(new Error(`GitHub ${res.status}`), { status: res.status });
   return res.json();
 }
 
@@ -279,8 +297,7 @@ async function pull() {
     }
     setStatus('✓');
   } catch (err) {
-    setStatus('오프라인');
-    console.warn(err);
+    showSyncError(err);
   } finally {
     syncing = false;
   }
@@ -303,8 +320,7 @@ async function push(keepalive = false) {
     });
     setStatus('✓');
   } catch (err) {
-    setStatus('오프라인');
-    console.warn(err);
+    showSyncError(err);
     schedulePush(15000);
   } finally {
     syncing = false;
@@ -339,7 +355,7 @@ $('#settings-btn').addEventListener('click', () => {
 });
 dlg.addEventListener('close', () => {
   if (dlg.returnValue !== 'save') return;
-  const token = $('#token').value.trim();
+  const token = $('#token').value.replace(/[^\x21-\x7e]/g, '');
   const gistId = $('#gist-id').value.trim();
   const changed = token !== sync.token || gistId !== sync.gistId;
   sync = { token, gistId };
